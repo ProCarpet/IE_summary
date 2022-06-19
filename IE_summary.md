@@ -498,7 +498,7 @@ FROM (
   * Join with S by using hash function
 * No sorting is required
 
-### Shuflle Hash JOIN
+### Shuffle Hash JOIN
 Speciall join of spark to handle joins of huge dataframes that can be split over many servers/Executors in the cluster and thus have no way of knowing where to merge. 
 
 <img src="img/shufle_join.PNG" alt="drawing" width="900"/>
