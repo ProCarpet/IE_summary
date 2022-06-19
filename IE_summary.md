@@ -131,7 +131,7 @@ Parent-Child Hierarchien sidn typischwerise Baumstrukturen welche sich gut in Ta
 3) `SDC Type 3`
    * Der neue Wert verdrängt den alten
    * Der ursprüngliche Wert wird in einer speziellen Spalte gespeichert\
-   <img src="img/sdc_3.PNG" alt="drawing" width="300"/>
+   <img src="img/sdc_3.png" alt="drawing" width="300"/>
 
 
 
@@ -340,6 +340,8 @@ Es gibt 3 Arten von Actions
 * To collect data to native objects in the respective programming language
 * To write to output data sources
 
+## Iterators 
+
 # Hadoop
 Ist ein `Paralleles file system` um grosse mengen daten zui verwalten. Läuft auf Linux file systemen. Dataen sind auf n Maschinen verteilt. 
 <img src="img/hadoop.PNG" alt="drawing" width="700"/>
@@ -439,6 +441,151 @@ avoide huge files
 * Delta Lake    
   * (auto-) optimize additional skipping, Z-ORDER
   
+
+# Query Optimization
+
+**Phases of SQL planing**
+
+<img src="img/phases_of_sql_planing.PNG" alt="drawing" width="700"/>
+
+1) We have a querry  
+```
+SELECT sum(v)
+FROM (
+  SELECT 
+    t1.id,
+    1+2+t1.value AS v
+  FROM t1 JOIN t2
+  WHERE 
+    t1.id = t2.id AND
+    t2.id > 50*1000 ) tmp
+```
+2) We make an `Abstraction Tree` which is the `Locigal Plan`
+<img src="img/abstraction_tree.PNG" alt="drawing" width="700"/>
+
+3) From this we create a `Physical Plan` which defines how to conduct the operations of the `Logical Plan`
+<img src="img/physical_plan.PNG" alt="drawing" width="500"/>
+
+## Opitimization of JOINs
+
+### Nested JOIN
+
+**Idea** we only select partial blocks: 
+
+<img src="img/join_optimization.PNG" alt="drawing" width="700"/>
+
+* b(R), b(S) number of blocks in R and S, respectivly 
+* *Outer relation*: each block is read only once
+* *Inner relation*: read once for each block of outer relation
+* Two *inner loops are "free"* (only main memory operations)
+* Selektion kann evtl gethreaded werden? 
+
+### Sort-Merge JOIN 
+
+**Idea** we sort both relations on jion attribes beforehand and merge both sorted relations
+<img src="img/sort_merge_join.PNG" alt="drawing" width="500"/>
+
+* We can stop Selecting columns after we reach a certain value and don't need to loop over the whole block. 
+
+### Hash JOIN
+
+**Idea** use the jion attributes as hash keys so each look up is O(log(n))
+
+* *Hash phase*:
+  * Scan relation S and compute hash table
+* *Merge Phase*: 
+  * Iterate over R tuple-wise
+  * Join with S by using hash function
+* No sorting is required
+
+### Shuflle Hash JOIN
+Speciall join of spark to handle joins of huge dataframes that can be split over many servers/Executors in the cluster and thus have no way of knowing where to merge. 
+
+<img src="img/shufle_join.PNG" alt="drawing" width="900"/>
+
+* Each `Executor(E1,E2,E3)` has a part of the dataframe or dataframes.
+* The Execturos will send each entry to the corresponding `Reduce Exchange (R1,R2,R3)` . Each Reduce exchange is responsible for a certain keyrange. The key is the `field` of the join condition.\
+These Reduce Exchanges are the Map function part.
+
+* Works best when:
+  * Distributed evenly with the key you are joining on
+  * Have an adequate number of keys for parallelism
+    * E.G. if table A has 1M rows but only 20 keys, the aximum parallelism is 20
+
+
+### Broadcast Hash JOIN
+
+* Can be performed when one `DataFrame` is small enough to fit into main memory:
+  * Broadcast "small" DataFrame to all the nodes
+* Enables partial local join:
+  * No shuffling required
+  * No additional communication overhead over network 
+
+<img src="img/boradcast_join.PNG" alt="drawing" width="500"/>
+
+<img src="img/boradcast_join2.PNG" alt="drawing" width="700"/>
+
+* Broadcast Hash Join often better than Shuffle Hash Join (no data transfer over network)
+* Should in princibple be automatic but might require hints:
+  * Spark SQL on parquet does this automatically
+  * **Not if input file is a text file**
+
+### JOIN optimization conclusion
+* `Hash JION` is typically faster than sort-merge JOIN (as no sorting is required)
+* `Sort-merge JOIN` is typically faster than nested-loop for larger tables
+* BUT:
+  * `Sort-merge` can be faster than hash join, if both tables are already sorted
+  * If the join condition is an `ineqality operator` (<,>,<>) `hash JOIN can't` be used
+* Depending on the characteristics of the table (size, data distribution, indexes etc. ) the optimizer chooses the best join strategy. 
+
+## Catalyst Optimizer Strategies
+* Goal: Minimize end-to-end query response time
+
+* Two **key ideas**:
+  * `Prune` unnecessary data as early as possible
+    * E.g filter pushdown, column pruning
+  * `Minimize` per-operator cost
+    * E.G. broadcast vs.shuffle, optimal join order
+
+## Declarative APIs
+
+* Vague, general definition on declarative Programming. 
+* No assumptions or indications on how to fulfil the query.
+* Expression order does not necessarily govern execution order (seeQuery plan above)
+  
+## DataFame
+
+* `DataFrame` consists of:
+  * Execution plan
+  * Result type schema
+  * Underlying `RDD`
+* An `RDD` is a **Resilient Distributed Dataset** with:
+    * Lineage - how was the input data calcuilated
+    * Partition Information - where is the input data actually distributed
+    * Instructions - code to be exectued
+* What is a  `DataFrame` **NOT**
+  * Data
+
+
+# Machine Learning
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
