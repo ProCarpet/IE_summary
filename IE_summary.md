@@ -96,7 +96,7 @@ Parent-Child Hierarchien sidn typischwerise Baumstrukturen welche sich gut in Ta
 * `ragged hierarchy` abgereissen
 * `skip-level hierarchy` fehlende Ebene
 
-<img src="img/skip_level.PNG" alt="drawing" width="600"/>
+<img src="img/skip_level.png" alt="drawing" width="600"/>
 
 
 
@@ -116,7 +116,7 @@ Parent-Child Hierarchien sidn typischwerise Baumstrukturen welche sich gut in Ta
 1) `SDC Type 1` 
    * ursprünglichle Attribute werden überschreiben 
    * keine Versionierung "as-is-reporting"\
-   <img src="img/sdc_1.PNG" alt="drawing" width="300"/>
+   <img src="img/sdc_1.png" alt="drawing" width="300"/>
 2) `SDC Type 2`
    * Bei Änderungen wird ein neuer Eitnrag in der Dimensionstabelle generiert
    * Volle Versioniertung "as-was-reporting
@@ -360,7 +360,7 @@ Ist ein `Paralleles file system` um grosse mengen daten zui verwalten. Läuft au
 2) NameNode(Master) speichert die metadaten über die location der daten und aktiviert DataNodes
 3) DataNode(worker) speichert die datenblöcke. 
 
-<img src="img/hdfs.png" alt="drawing" width="700"/>
+<img src="img/hdfs.PNG" alt="drawing" width="700"/>
 
 ### Write
 
@@ -408,9 +408,6 @@ Je nach Anwendungsfall `OLTP` oder `OLAP` machen unterschiedliche physische stru
 Wenn wir daten aus col a und b brauche ergibt sich folgendes memory zugriffs pattern. Dies ist ein ungünstiges zugriffspattern 
 
 <img src="img/row_vs_col.PNG" alt="drawing" width="700"/>
-
-## Parquet file
-
 
 
 ## Parquet encoding
